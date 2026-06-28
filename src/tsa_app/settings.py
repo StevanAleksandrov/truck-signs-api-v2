@@ -24,11 +24,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_BASE_DIR = BASE_DIR.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-# load environment variables from .env file
-has_env_vars_configuration = load_dotenv(ROOT_BASE_DIR / ".env")
-if not has_env_vars_configuration:
-    logger.warning("could not find .env file, make sure env variables are set as required")
+# Load environment variables from a local .env file if present.
+# In Docker Compose, variables are injected through env_file and do not require
+# a physical .env file inside the container.
+env_file = ROOT_BASE_DIR / ".env"
 
+if env_file.exists():
+    load_dotenv(env_file)
+    logger.info("loaded environment variables from .env file")
+
+else:
+    logger.info("no local .env file found, using existing environment variables")
 # read configuration from environment, set secure defaults where possible
 # adjust django settings depending on environment configuration
 LOG_LEVEL = os.getenv("LOG_LEVEL", "ERROR")
@@ -39,6 +45,7 @@ DEBUG = os.getenv("DEBUG_ENABLED", "False") == "True"
 if DEBUG is True and MODE != "":
     logger.info("could not detect MODE variable, setting to 'dev'")
     MODE = "dev"
+
 elif not MODE or MODE == "":
     logger.info("could not detect MODE variable, setting to 'prod'")
     MODE = "prod"
@@ -47,6 +54,7 @@ if MODE == "prod":
     logger.info("running in production mode, ensure 'DEBUG' is disabled")
     DEBUG = False
     logger.setLevel(level=LOG_LEVEL)
+
 else:
     # dev mode
     logger.info("running in development mode, enabling 'DEBUG'")
@@ -110,8 +118,8 @@ db_engine = "django.db.backends.sqlite3" if MODE != "prod" else "django.db.backe
 pg_config = {
     "ENGINE": db_engine,
     "NAME": os.getenv("DB_NAME", "trucksigns_db"),
-    "USER": os.getenv("DB_USER", "trucksigns_user"),
-    "PASSWORD": os.getenv("DB_PASSWORD", "supertrucksignsuser!"),
+    "USER": os.getenv("DB_USER"),
+    "PASSWORD": os.getenv("DB_PASSWORD"),
     "HOST": os.getenv("DB_HOST", "localhost"),
     "PORT": os.getenv("DB_PORT", "5432"),
 }
