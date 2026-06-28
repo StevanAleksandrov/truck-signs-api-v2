@@ -1,45 +1,35 @@
 services:
   db:
-    image: postgres:7-alpine
+    image: postgres:16-alpine
     container_name: tsa_db
-    env_file: .env
-    networks:
-      - tsa-network
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    networks:
+      - tsa-network
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pg_isready -U ${DB_USER} -d ${DB_NAME}',
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   backend:
-    build: .
+    image: truck-signs-api:local
     container_name: tsa_backend
-    command: gunicorn tsa_app.wsgi:application --bind 0.0.0.0:8000 --workers 4
-    networks:
-      - tsa-network
-    environment:
-      MODE: prod
-      DEBUG_ENABLED: 'False'
-      DB_NAME: trucksigns_db
-      DB_USER: trucksigns_user
-      DB_PASSWORD: supertrucksignsuser!
-      DB_HOST: tsa_db
-      DB_PORT: 5432
-      ALLOWED_HOSTS: localhost,127.0.0.1,tsa-web
-    volumes:
-      - ./src/staticfiles:/app/src/staticfiles
-      - ./src/media:/app/src/media
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8020:8000"
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - tsa-network
 
 volumes:
   postgres_data:
