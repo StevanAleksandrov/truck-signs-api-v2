@@ -28,6 +28,7 @@ The store also allows clients to upload their own designs and to customize them 
   - [Additional Information](#additional-information)
     - [Postgresql Database](#postgresql-database)
     - [Docker](#docker)
+     - [Docker Build Context](#docker-build-context)
     - [Django and DRF](#django-and-drf)
     - [Miscellaneous](#miscellaneous)
 
@@ -215,10 +216,19 @@ Congratulations =) !!! The App should be running in [localhost:8000](http://loca
 
 ### Docker
 
+### Docker Build Context
+
+The repository contains a .dockerignore file to keep the Docker build context clean and secure.
+
+The .dockerignore file excludes local development files, Git metadata, virtual environments, Python cache files, local .env files, generated SQLite databases, collected static files, media files, test caches, documentation files and other files that are not required inside the Docker image.
+
+This keeps the image build smaller, avoids copying unnecessary files into the build context and helps prevent local secrets from being included accidentally.
+
 - [Docker Oficial Documentation](https://docs.docker.com/)
 - Dockerizing Django, PostgreSQL, guinicorn, and Nginx:
     - Github repo of sunilale0: [Link](https://github.com/sunilale0/django-postgresql-gunicorn-nginx-dockerized/blob/master/README.md#nginx)
     - Michael Herman article on testdriven.io: [Link](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/)
+
 
 ### Django and DRF
 
